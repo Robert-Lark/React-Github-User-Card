@@ -1,3 +1,4 @@
+
 // eslint-disable-next-line
 import React, { useRef, useEffect } from "react";
 // eslint-disable-next-line
@@ -24,7 +25,7 @@ const useStyles = makeStyles(() => ({
 	},
 }));
 
-function Gsap() {
+function Gsap(props) {
 	let clickHand = useRef(null);
 	let buttonOpacity = useRef(null);
 
@@ -41,6 +42,8 @@ const formSubmit = (e) => {
 			ease: Power3.easeOut,
 		});
 
+
+	props.handleClick();
 
 };
 
@@ -65,6 +68,7 @@ const formSubmit = (e) => {
 					aria-label="add"
 					className={classes.button}
 					onClick={formSubmit}
+
 				>
 					<NavigationIcon className={classes.extendedIcon} />
 					Get Me The Best
