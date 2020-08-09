@@ -8,6 +8,11 @@ import Avatar from "@material-ui/core/Avatar";
 import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
+import Input from "@material-ui/core/Input";
+import InputLabel from "@material-ui/core/InputLabel";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import FormControl from "@material-ui/core/FormControl";
+import AccountCircle from "@material-ui/icons/AccountCircle";
 
 const styles = (theme) => ({
 	top: {
@@ -51,12 +56,12 @@ const styles = (theme) => ({
 		opacity: 0,
 	},
 	userCardContainer: {
-		opacity: 0,
+		opacity: 1,
 		display: "flex",
 		flexDirection: "Column",
 		justifyContent: "space-around",
 		alignItems: "center",
-		marginTop: "300px",
+		marginTop: "400px",
 		width: "100vw",
 		height: "800px",
 	},
@@ -85,16 +90,24 @@ const styles = (theme) => ({
 		fontSize: "2em",
 		marginBottom: "20px",
 	},
+	form: {
+		marginTop: "15%",
+		height: "20vh",
+		display: "flex",
+		flexDirection: "column",
+		justifyContent: "space-around",
+		alignItems: "center",
+	},
 });
 
 class UserCard extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-			users: [],
+            users: [],
 			usersFollowers: [],
 			following: [],
-			user: "",
+			user: [],
 		};
 	}
 
@@ -102,7 +115,11 @@ class UserCard extends React.Component {
 		this.setState({
 			isActive0: !this.state.isActive0,
 		});
-	};
+    };
+    searchBarHandleChange = (e) => {
+        console.log("changes called")
+    }
+
 	componentDidMount() {
 		axios
 			.get("https://api.github.com/users/robert-lark/followers")
@@ -111,36 +128,27 @@ class UserCard extends React.Component {
 				//console.log(this.state);
 			})
 			.catch((err) => console.log(err));
-		axios
-					.get(`https://api.github.com/users/AFortune/followers`)
-					.then((res) => {
-						this.setState({ usersFollowers: res.data });
-					})
-					.catch((err) => console.log(err));
-		axios
-			.get(`https://api.github.com/users/AFortune/following`)
-			.then((res) => {
-				this.setState({ following: res.data });
-			})
-			.catch((err) => console.log(err));
 	}
 
 	componentDidUpdate(prevProps, prevState) {
 		if (prevState.user !== this.state.user) {
-            console.log("state has changed")
+           console.log(`state has changed ${this.state.user}`);
+            console.log(`state has changed ${this.state.usersFollowers}`);
+            console.log(`state has changed ${this.state.following}`);
+            axios
+							.get(`https://api.github.com/users/${this.state.user.login}/followers`)
+							.then((res) => {
+								this.setState({ usersFollowers: res.data });
+							})
+							.catch((err) => console.log(err));
+						axios
+							.get(`https://api.github.com/users/${this.state.user.login}/following`)
+							.then((res) => {
+								this.setState({ following: res.data });
+							})
+							.catch((err) => console.log(err));
 		}
 	}
-
-	getUserID = (user) => {
-        console.log(user.login);
-        
-        
-		// this.setState({
-		// 	...this.state,
-		// 	user: user.login
-		// });
-		console.log(this.state);
-	};
 
 	render() {
 		const { classes } = this.props;
@@ -162,83 +170,109 @@ class UserCard extends React.Component {
 									alt="user"
 									src={users.avatar_url}
 									className={classes.avatar}
-									onClick={() => this.getUserID(users)}
+									onClick={() => this.setState({ user: users })}
+									// onClick={() => this.getUserID(users)}
+									//onClick={console.log(users.login)}
 								/>
 								<Typography className={classes.name}>{users.login}</Typography>
 							</Grid>
 						))}
 					</Grid>
 				</div>
-				{this.state.users.map((users) => (
-					<Box className={classes.userCardContainer}>
-						<Paper variant="outlined" className={classes.paper}>
-							<Typography className={classes.nameBold}>
-								{this.state.users[0].login}
+				{/* {this.state.users.map((users) => ( */}
+				<Box className={classes.userCardContainer}>
+					<Paper variant="outlined" className={classes.paper}>
+						<Typography className={classes.nameBold}>
+							{this.state.user.login}
+						</Typography>
+						<img
+							src="https://ghchart.rshah.org/AFortune"
+							alt="2016rshah's Github chart"
+						/>
+						<Typography className={classes.name}>
+							{this.state.user.html_url}
+						</Typography>
+						<Typography className={classes.name}>
+							ID: {this.state.user.id}
+						</Typography>
+						<Typography className={classes.name}>
+							Node ID: {this.state.user.node_id}
+						</Typography>
+						<Typography className={classes.name}>
+							Type: {this.state.user.type}
+						</Typography>
+						<Typography className={classes.name}>
+							<Button variant="outlined" href="this.state.users[0].repos_url">
+								Find {this.state.user.login}'s Repo's Here
+							</Button>
+						</Typography>
+					</Paper>
+					<Grid container className={classes.friendsFollowersContainer}>
+						<Grid item className={classes.follows}>
+							<Typography className={classes.text}>
+								{this.state.user.login} Follows
 							</Typography>
-							<Typography className={classes.name}>
-								{this.state.users[0].html_url}
-							</Typography>
-							<Typography className={classes.name}>
-								ID: {this.state.users[0].id}
-							</Typography>
-							<Typography className={classes.name}>
-								Node ID: {this.state.users[0].node_id}
-							</Typography>
-							<Typography className={classes.name}>
-								Type: {this.state.users[0].type}
-							</Typography>
-							<Typography className={classes.name}>
-								<Button variant="outlined" href="this.state.users[0].repos_url">
-									Find {this.state.users[0].login}'s Repo's Here
-								</Button>
-							</Typography>
-						</Paper>
-						<Grid container className={classes.friendsFollowersContainer}>
-							<Grid item className={classes.follows}>
-								<Typography className={classes.text}>
-									{this.state.users[0].login} Follows
-								</Typography>
-							</Grid>
-							<Grid container className={classes.friendsFollowersItem}>
-								{this.state.usersFollowers.map((usersfs) => (
-									<Grid item className={classes.avatarTop}>
-										<Avatar
-											alt="Remy Sharp"
-											src={usersfs.avatar_url}
-											className={classes.avatar}
-											onClick={this.handleSingleClickEventEnlarge}
-										/>
-										<Typography className={classes.name}>
-											{usersfs.login}
-										</Typography>
-									</Grid>
-								))}
-							</Grid>
 						</Grid>
-						<Grid container className={classes.friendsFollowersContainer}>
-							<Grid item className={classes.follows}>
-								<Typography className={classes.text}>
-									{this.state.users[0].login} Is Followed By
-								</Typography>
-							</Grid>
-							<Grid container className={classes.friendsFollowingItem}>
-								{this.state.following.map((usersfs) => (
-									<Grid item className={classes.avatarFollow}>
-										<Avatar
-											alt="Remy Sharp"
-											src={usersfs.avatar_url}
-											className={classes.avatar}
-											onClick={this.handleSingleClickEventEnlarge}
-										/>
-										<Typography className={classes.name}>
-											{usersfs.login}
-										</Typography>
-									</Grid>
-								))}
-							</Grid>
+						<Grid container className={classes.friendsFollowersItem}>
+							{this.state.usersFollowers.map((usersfs) => (
+								<Grid item className={classes.avatarTop}>
+									<Avatar
+										alt="Remy Sharp"
+										src={usersfs.avatar_url}
+										className={classes.avatar}
+										onClick={this.handleSingleClickEventEnlarge}
+									/>
+									<Typography className={classes.name}>
+										{usersfs.login}
+									</Typography>
+								</Grid>
+							))}
 						</Grid>
+					</Grid>
+					<Grid container className={classes.friendsFollowersContainer}>
+						<Grid item className={classes.follows}>
+							<Typography className={classes.text}>
+								{this.state.user.login} Is Followed By
+							</Typography>
+						</Grid>
+						<Grid container className={classes.friendsFollowingItem}>
+							{this.state.following.map((usersfg) => (
+								<Grid item className={classes.avatarFollow}>
+									<Avatar
+										alt="Remy Sharp"
+										src={usersfg.avatar_url}
+										className={classes.avatar}
+										onClick={this.handleSingleClickEventEnlarge}
+									/>
+									<Typography className={classes.name}>
+										{usersfg.login}
+									</Typography>
+								</Grid>
+							))}
+						</Grid>
+					</Grid>
+				</Box>
+				{/* ))} */}
+				<footer>
+					<Box className={classes.form}>
+						<FormControl>
+							<InputLabel htmlFor="input-with-icon-adornment">
+								Search for the best here:
+							</InputLabel>
+							<Input
+								type="text"
+								value={this.state.user}
+								onChange={this.searchBarHandleChange}
+								id="input-with-icon-adornment"
+								startAdornment={
+									<InputAdornment position="start">
+										<AccountCircle />
+									</InputAdornment>
+								}
+							/>
+						</FormControl>
 					</Box>
-				))}
+				</footer>
 			</div>
 		);
 	}
