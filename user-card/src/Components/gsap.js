@@ -22,7 +22,10 @@ const useStyles = makeStyles(() => ({
 	},
 	button: {
 		opacity: "1",
+        border: "2px solid black",
+        marginTop: "-50px",
 	},
+	extendedIcon: {},
 }));
 
 function Gsap(props) {
