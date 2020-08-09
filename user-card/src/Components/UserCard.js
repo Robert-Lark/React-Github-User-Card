@@ -5,6 +5,9 @@ import Grid from "@material-ui/core/Grid";
 import Gsap from "./gsap";
 import { Typography } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
+import Box from "@material-ui/core/Box";
+import Button from "@material-ui/core/Button";
+import Paper from "@material-ui/core/Paper";
 
 const styles = (theme) => ({
 	top: {
@@ -29,13 +32,58 @@ const styles = (theme) => ({
 		height: "7em",
 		width: "7em",
 	},
+	nameBold: {
+		marginTop: "10px",
+		fontFamily: "Rockwell",
+		textAlign: "center",
+		fontSize: "3rem",
+	},
 	name: {
 		marginTop: "10px",
 		fontFamily: "Rockwell",
 		textAlign: "center",
 	},
+	paper: {
+		border: "2px solid black",
+		padding: "20px",
+	},
 	hideEl: {
 		opacity: 0,
+	},
+	userCardContainer: {
+		opacity: 0,
+		display: "flex",
+		flexDirection: "Column",
+		justifyContent: "space-around",
+		alignItems: "center",
+		marginTop: "300px",
+		width: "100vw",
+		height: "800px",
+	},
+	friendsFollowersContainer: {
+		marginTop: "50px",
+		display: "flex",
+		width: "90vw",
+		flexDirection: "Column",
+		justifyContent: "space-around",
+		alignItems: "center",
+	},
+	friendsFollowersItem: {
+		display: "flex",
+		justifyContent: "space-around",
+		alignItems: "center",
+		width: "90vw",
+	},
+	friendsFollowingItem: {
+		display: "flex",
+		justifyContent: "space-around",
+		alignItems: "center",
+		width: "90vw",
+	},
+	avatarFollow: {},
+	text: {
+		fontSize: "2em",
+		marginBottom: "20px",
 	},
 });
 
@@ -43,31 +91,56 @@ class UserCard extends React.Component {
 	constructor() {
 		super();
 		this.state = {
-            users: [],
-            user: "",
+			users: [],
+			usersFollowers: [],
+			following: [],
+			user: "",
 		};
 	}
-	handleSingleClickEventEnlarge = () => {
-	this.setState({
-		isActive1: !this.state.isActive1,
-	});
-	};
+
 	handleSingleClickEventFadeIn = () => {
 		this.setState({
 			isActive0: !this.state.isActive0,
 		});
-
 	};
-
 	componentDidMount() {
 		axios
 			.get("https://api.github.com/users/robert-lark/followers")
 			.then((res) => {
 				this.setState({ users: res.data });
-				console.log(this.state);
+				//console.log(this.state);
+			})
+			.catch((err) => console.log(err));
+		axios
+					.get(`https://api.github.com/users/AFortune/followers`)
+					.then((res) => {
+						this.setState({ usersFollowers: res.data });
+					})
+					.catch((err) => console.log(err));
+		axios
+			.get(`https://api.github.com/users/AFortune/following`)
+			.then((res) => {
+				this.setState({ following: res.data });
 			})
 			.catch((err) => console.log(err));
 	}
+
+	componentDidUpdate(prevProps, prevState) {
+		if (prevState.user !== this.state.user) {
+            console.log("state has changed")
+		}
+	}
+
+	getUserID = (user) => {
+        console.log(user.login);
+        
+        
+		// this.setState({
+		// 	...this.state,
+		// 	user: user.login
+		// });
+		console.log(this.state);
+	};
 
 	render() {
 		const { classes } = this.props;
@@ -85,28 +158,87 @@ class UserCard extends React.Component {
 						{this.state.users.map((users) => (
 							<Grid item className={classes.avatarTop}>
 								<Avatar
-									alt="Remy Sharp"
+									key={users}
+									alt="user"
 									src={users.avatar_url}
 									className={classes.avatar}
-									onClick={this.handleSingleClickEventEnlarge}
+									onClick={() => this.getUserID(users)}
 								/>
 								<Typography className={classes.name}>{users.login}</Typography>
 							</Grid>
 						))}
 					</Grid>
 				</div>
-				<div
-					className={
-						this.state.isActive1 === true ? classes.root1 : classes.hideEl
-					}
-				>
-					<img
-						alt="Remy Sharp"
-						src={this.state.avatar_url}
-						className={classes.avatar}
-						onClick={this.handleSingleClickEvent1}
-					/>
-				</div>
+				{this.state.users.map((users) => (
+					<Box className={classes.userCardContainer}>
+						<Paper variant="outlined" className={classes.paper}>
+							<Typography className={classes.nameBold}>
+								{this.state.users[0].login}
+							</Typography>
+							<Typography className={classes.name}>
+								{this.state.users[0].html_url}
+							</Typography>
+							<Typography className={classes.name}>
+								ID: {this.state.users[0].id}
+							</Typography>
+							<Typography className={classes.name}>
+								Node ID: {this.state.users[0].node_id}
+							</Typography>
+							<Typography className={classes.name}>
+								Type: {this.state.users[0].type}
+							</Typography>
+							<Typography className={classes.name}>
+								<Button variant="outlined" href="this.state.users[0].repos_url">
+									Find {this.state.users[0].login}'s Repo's Here
+								</Button>
+							</Typography>
+						</Paper>
+						<Grid container className={classes.friendsFollowersContainer}>
+							<Grid item className={classes.follows}>
+								<Typography className={classes.text}>
+									{this.state.users[0].login} Follows
+								</Typography>
+							</Grid>
+							<Grid container className={classes.friendsFollowersItem}>
+								{this.state.usersFollowers.map((usersfs) => (
+									<Grid item className={classes.avatarTop}>
+										<Avatar
+											alt="Remy Sharp"
+											src={usersfs.avatar_url}
+											className={classes.avatar}
+											onClick={this.handleSingleClickEventEnlarge}
+										/>
+										<Typography className={classes.name}>
+											{usersfs.login}
+										</Typography>
+									</Grid>
+								))}
+							</Grid>
+						</Grid>
+						<Grid container className={classes.friendsFollowersContainer}>
+							<Grid item className={classes.follows}>
+								<Typography className={classes.text}>
+									{this.state.users[0].login} Is Followed By
+								</Typography>
+							</Grid>
+							<Grid container className={classes.friendsFollowingItem}>
+								{this.state.following.map((usersfs) => (
+									<Grid item className={classes.avatarFollow}>
+										<Avatar
+											alt="Remy Sharp"
+											src={usersfs.avatar_url}
+											className={classes.avatar}
+											onClick={this.handleSingleClickEventEnlarge}
+										/>
+										<Typography className={classes.name}>
+											{usersfs.login}
+										</Typography>
+									</Grid>
+								))}
+							</Grid>
+						</Grid>
+					</Box>
+				))}
 			</div>
 		);
 	}
