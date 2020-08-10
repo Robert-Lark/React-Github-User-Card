@@ -5,7 +5,6 @@ import Grid from "@material-ui/core/Grid";
 import Gsap from "./gsap";
 import { Typography } from "@material-ui/core";
 import Avatar from "@material-ui/core/Avatar";
-import Box from "@material-ui/core/Box";
 import Button from "@material-ui/core/Button";
 import Paper from "@material-ui/core/Paper";
 import Input from "@material-ui/core/Input";
@@ -101,7 +100,7 @@ const styles = (theme) => ({
 		alignItems: "center",
 	},
 	formBox: {
-		height: "10vh",
+		height: "20vh",
 		width: "100vw",
 		display: "flex",
 		flexDirection: "column",
@@ -127,20 +126,45 @@ class UserCard extends React.Component {
 
 	handleSingleClickEventFadeIn = () => {
 		this.setState({
+			...this.state,
 			isActive0: !this.state.isActive0,
 		});
 	};
 
 	searchBarHandleChange = (e) => {
 		console.log("changes called");
+		this.setState({
+			...this.state,
+			search: e.target.value,
+			isActive2: false,
+			isActive1: false,
+		});
+	};
+
+	searchSubmit = (e) => {
+		console.log("changes called");
+		axios
+			.get(`https://api.github.com/users/${this.state.search}`)
+			.then((res) => {
+				this.setState({
+					...this.state,
+					search: res.data,
+					isActive1: false,
+					isActive2: !this.state.isActive2,
+				});
+			})
+			.catch((err) => console.log(err));
+		this.setState({
+			...this.state,
+			search: "",
+		});
 	};
 
 	componentDidMount() {
 		axios
 			.get("https://api.github.com/users/robert-lark/followers")
 			.then((res) => {
-				this.setState({ users: res.data });
-				//console.log(this.state);
+				this.setState({ ...this.state, users: res.data });
 			})
 			.catch((err) => console.log(err));
 	}
@@ -153,15 +177,34 @@ class UserCard extends React.Component {
 			axios
 				.get(`https://api.github.com/users/${this.state.user.login}/followers`)
 				.then((res) => {
-					this.setState({ usersFollowers: res.data });
+					this.setState({ ...this.state, usersFollowers: res.data });
 				})
 				.catch((err) => console.log(err));
 			axios
 				.get(`https://api.github.com/users/${this.state.user.login}/following`)
 				.then((res) => {
-					this.setState({ following: res.data });
+					this.setState({ ...this.state, following: res.data });
 				})
 				.catch((err) => console.log(err));
+		}
+		if (prevState.search !== this.state.search) {
+			axios
+				.get(
+					`https://api.github.com/users/${this.state.search.login}/followers`
+				)
+				.then((res) => {
+					this.setState({ ...this.state, usersFollowers: res.data });
+				})
+				.catch((err) => console.log(err));
+			axios
+				.get(
+					`https://api.github.com/users/${this.state.search.login}/following`
+				)
+				.then((res) => {
+					this.setState({ ...this.state, following: res.data });
+				})
+				.catch((err) => console.log(err));
+			
 		}
 	}
 
@@ -187,8 +230,10 @@ class UserCard extends React.Component {
 									className={classes.avatar}
 									onClick={() =>
 										this.setState({
+											...this.state,
 											user: users,
 											isActive1: !this.state.isActive1,
+											isActive3: true,
 										})
 									}
 								/>
@@ -206,7 +251,9 @@ class UserCard extends React.Component {
 				>
 					<div
 						className={
-							this.state.isActive1 === true ? classes.showEl : classes.displayNone
+							this.state.isActive1 === true
+								? classes.showEl
+								: classes.displayNone
 						}
 					>
 						<Grid container className={classes.userCardContainer}>
@@ -215,8 +262,8 @@ class UserCard extends React.Component {
 									{this.state.user.login}
 								</Typography>
 								<img
-									src="https://ghchart.rshah.org/AFortune"
-									alt="2016rshah's Github chart"
+									src={`https://ghchart.rshah.org/${this.state.user.login}`}
+									alt={`${this.state.users.login}'s Github chart`}
 								/>
 								<Typography className={classes.name}>
 									{this.state.user.html_url}
@@ -290,26 +337,134 @@ class UserCard extends React.Component {
 								</Grid>
 							))}
 
-							<Grid item className={classes.formBox}>
-								<FormControl>
-									<InputLabel htmlFor="input-with-icon-adornment">
-										Search for the best here:
-									</InputLabel>
-									<Input
-										type="text"
-										value={this.state.search}
-										onChange={this.searchBarHandleChange}
-										id="input-with-icon-adornment"
-										startAdornment={
-											<InputAdornment position="start">
-												<AccountCircle />
-											</InputAdornment>
-										}
-									/>
-								</FormControl>
-							</Grid>
+						
 						</Grid>
 					</div>
+				</div>
+
+				{/* SECOND USERCARD FROM SEARCH */}
+
+				<div
+					className={
+						this.state.isActive2 === true ? classes.showEl : classes.hideEl
+					}
+				>
+					<div
+						className={
+							this.state.isActive2 === true
+								? classes.showEl
+								: classes.displayNone
+						}
+					>
+						<Grid container className={classes.userCardContainer}>
+							<Paper variant="outlined" className={classes.paper}>
+								<Typography className={classes.nameBold}>
+									{this.state.search.login}
+								</Typography>
+								<img
+									src={`https://ghchart.rshah.org/${this.state.search.login}`}
+									alt={`${this.state.search.login}'s Github chart`}
+								/>
+								<Typography className={classes.name}>
+									{this.state.search.html_url}
+								</Typography>
+								<Typography className={classes.name}>
+									ID: {this.state.search.id}
+								</Typography>
+								<Typography className={classes.name}>
+									Node ID: {this.state.search.node_id}
+								</Typography>
+								<Typography className={classes.name}>
+									Type: {this.state.search.type}
+								</Typography>
+								<Typography className={classes.name}>
+									<Button variant="outlined" href={this.state.user.repos_url}>
+										Find {this.state.search.login}'s Repo's Here
+									</Button>
+								</Typography>
+							</Paper>
+							<Grid item className={classes.follows}>
+								<Typography className={classes.text}>
+									{this.state.search.login} Follows
+								</Typography>
+							</Grid>
+						</Grid>
+
+						<Grid
+							container
+							justify="center"
+							spacing={5}
+							className={classes.root}
+						>
+							{this.state.following.map((users) => (
+								<Grid item className={classes.avatarTop}>
+									<Avatar
+										key={users}
+										alt="user"
+										src={users.avatar_url}
+										className={classes.avatar}
+									/>
+									<Typography className={classes.name}>
+										{users.login}
+									</Typography>
+								</Grid>
+							))}
+						</Grid>
+						<Grid container className={classes.follows2}>
+							<Grid item>
+								<Typography className={classes.text}>
+									{this.state.search.login} Is Followed By
+								</Typography>
+							</Grid>
+						</Grid>
+						<Grid
+							container
+							justify="center"
+							spacing={5}
+							className={classes.root}
+						>
+							{this.state.usersFollowers.map((users) => (
+								<Grid item className={classes.avatarTop}>
+									<Avatar
+										key={users}
+										alt="user"
+										src={users.avatar_url}
+										className={classes.avatar}
+									/>
+									<Typography className={classes.name}>
+										{users.login}
+									</Typography>
+								</Grid>
+							))}
+						</Grid>
+					</div>
+				</div>
+				<div
+					className={
+						this.state.isActive3 === true
+							? classes.showEl
+							: classes.displayNone
+					}
+				>
+				<Grid item className={classes.formBox}>
+					<FormControl>
+						<InputLabel htmlFor="input-with-icon-adornment">
+							Search for the best here:
+									</InputLabel>
+						<Input
+							type="text"
+							value={this.state.search}
+							onChange={this.searchBarHandleChange}
+							id="input-with-icon-adornment"
+							startAdornment={
+								<InputAdornment position="start">
+									<AccountCircle />
+								</InputAdornment>
+							}
+						/>
+					</FormControl>
+					<Button onClick={this.searchSubmit}>Search</Button>
+				</Grid>
 				</div>
 			</div>
 		);
